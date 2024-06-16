@@ -1,8 +1,11 @@
 package com.example.javaerp.Todo.repository.Todo;
 
 import com.example.javaerp.Todo.repository.Member.Member;
+import com.example.javaerp.Todo.repository.Notification.Notification;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -25,4 +28,8 @@ public class Todo {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private Member member;
+
+    @OneToMany(mappedBy = "todo")
+    private List<Notification> notifications;
+
 }

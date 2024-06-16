@@ -10,28 +10,24 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
-@Controller
+@RestController
 @RequiredArgsConstructor
-@RequestMapping(value = "/login")
+@RequestMapping("/api/login")
 public class LoginController {
 
     private final LoginService loginService;
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomLogoutHandler customLogoutHandler;
 
-    @GetMapping
-    public String showLoginPage(Model model) {
-        model.addAttribute("loginRequest", new Login());
-        return "login";
-    }
-
-    @PostMapping
-    public String login(@ModelAttribute("loginRequest") Login loginRequest, HttpServletResponse httpServletResponse) {
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody Login loginRequest, HttpServletResponse httpServletResponse) {
         // 로그인 시도
         String userEmail = loginService.login(loginRequest);
 
@@ -40,31 +36,24 @@ public class LoginController {
         log.info("jwt 토큰 :" + token);
         httpServletResponse.setHeader(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX + token);
 
-        // 로그인 성공 시 메인 페이지로 리다이렉트
-        return "redirect:/main";
-    }
-
-    @GetMapping("/signup")
-    public String showSignUpPage(Model model) {
-        model.addAttribute("signUpRequest", new SignUp());
-        return "signup";
+        // 로그인 성공 시 토큰 반환
+        return ResponseEntity.ok(token);
     }
 
     @PostMapping("/signup")
-    public String signUp(@ModelAttribute("signUpRequest") SignUp signUpRequest, Model model) {
+    public ResponseEntity<Void> signUp(@RequestBody SignUp signUpRequest) {
         boolean isSignUpSuccess = loginService.signUp(signUpRequest);
         if (isSignUpSuccess) {
-            return "redirect:/login";
+            return ResponseEntity.status(HttpStatus.CREATED).build();
         } else {
-            model.addAttribute("errorMessage", "회원가입에 실패했습니다.");
-            return "signup";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
 
     @PostMapping("/logout")
-    public String logout(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         // 현재 사용자 로그아웃 처리
         customLogoutHandler.logout(request, response, null);
-        return "redirect:/login";
+        return ResponseEntity.ok().build();
     }
 }

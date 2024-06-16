@@ -61,6 +61,32 @@ public class TodoService {
         todoJpaRepository.delete(existingTodo);
     }
 
+    public List<TodoDTO> getTodos(String title, String description, Boolean completed) {
+        List<Todo> todos = todoJpaRepository.findAll();
+
+        if (title != null) {
+            todos = todos.stream()
+                    .filter(todo -> todo.getTitle().contains(title))
+                    .collect(Collectors.toList());
+        }
+
+        if (description != null) {
+            todos = todos.stream()
+                    .filter(todo -> todo.getDescription().contains(description))
+                    .collect(Collectors.toList());
+        }
+
+        if (completed != null) {
+            todos = todos.stream()
+                    .filter(todo -> todo.isCompleted() == completed)
+                    .collect(Collectors.toList());
+        }
+
+        return todos.stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
     private TodoDTO toDTO(Todo todo) {
         return TodoDTO.builder()
                 .id(todo.getId())
@@ -69,5 +95,14 @@ public class TodoService {
                 .completed(todo.isCompleted())
                 .build();
     }
+    private Todo toEntity(TodoDTO todoDTO) {
+        return Todo.builder()
+                .id(todoDTO.getId())
+                .title(todoDTO.getTitle())
+                .description(todoDTO.getDescription())
+                .completed(todoDTO.isCompleted())
+                .build();
+    }
+
 }
 

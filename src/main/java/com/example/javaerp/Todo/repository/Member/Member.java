@@ -1,5 +1,7 @@
 package com.example.javaerp.Todo.repository.Member;
 
+import com.example.javaerp.Todo.repository.Schedule.Schedule;
+import com.example.javaerp.Todo.repository.Todo.Todo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -48,6 +50,13 @@ public class Member {
 
     @Column(name = "resume_file_path")
     private String resumeFilePath;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Schedule> schedules = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member")
+    private List<Todo> todos;
+
 
     public List<String> getRoleList(){
         if (this.role.length() > 0){
